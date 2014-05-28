@@ -1,9 +1,59 @@
 package pl.areusmart.flightplan;
 
-public class Main {
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-    public static void main(String[] args) {
-	// write your code here
-        System.out.println("line");
+public class Main {
+    public static Airport FindAirportInDb(String IATA) {
+        BufferedReader br = null;
+
+        try {
+            String Line;
+            String PathToData = "airports.dat";
+            Airport airport;
+            br = new BufferedReader(new FileReader(PathToData));
+
+            while ((Line = br.readLine()) != null) {
+                airport = new Airport(Line);
+                if (airport.getIATA().equals(IATA))
+                    return airport;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (br != null) br.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        return null;
+    }
+
+    public static void main(String[] args) throws ParseException {
+        int i = 0;
+        for (String s : args)
+            System.out.println((i++) + ":" + s);
+        System.out.println("===================================================");
+        Airport StartAirport = FindAirportInDb(args[0]);
+        Airport EndAirport = FindAirportInDb(args[1]);
+        double MaxDistanceFromAlternateAirport = Double.parseDouble(args[2]);
+        double Velocity = Double.parseDouble(args[3]);
+
+        Date date = new SimpleDateFormat("HH:mm:ss").parse(args[4]);
+
+
+        System.out.println(StartAirport.toString());
+        System.out.println(EndAirport.toString());
+        System.out.println(MaxDistanceFromAlternateAirport);
+        System.out.println(Velocity);
+        System.out.println(date);
+
     }
 }
