@@ -11,12 +11,13 @@ import java.util.Date;
 public class Main {
     public static final int DegreeInKm = 111;
 
+    final static String PathToData = "lotniska.dat";
+
     public static ArrayList<Airport> FindAllAirportsInDb() {
         BufferedReader br = null;
         ArrayList<Airport> airports = new ArrayList<Airport>();
         try {
             String Line;
-            String PathToData = "airports.dat";
             Airport airport;
             br = new BufferedReader(new FileReader(PathToData));
 
@@ -43,7 +44,6 @@ public class Main {
 
         try {
             String Line;
-            String PathToData = "airports.dat";
             Airport airport;
             br = new BufferedReader(new FileReader(PathToData));
 
@@ -69,34 +69,58 @@ public class Main {
     }
 
     public static void main(String[] args) throws ParseException {
-
-        int i = 0;
-        for (String s : args)
-            System.out.println((i++) + ":" + s);
-        System.out.println("===================================================");
         Airport StartAirport = FindAirportInDb(args[0]);
         Airport EndAirport = FindAirportInDb(args[1]);
-        double MaxDistanceFromFlyPath = Double.parseDouble(args[2]);
+        double MaxDistanceFromFlyPath = Double.parseDouble(args[2]) / DegreeInKm;
         double Velocity = Double.parseDouble(args[3]);
 
         Date date = new SimpleDateFormat("HH:mm:ss").parse(args[4]);
 
-
-        System.out.println(StartAirport.toString());
-        System.out.println(EndAirport.toString());
-        System.out.println(MaxDistanceFromFlyPath);
-        System.out.println(Velocity);
-        System.out.println(date);
-
-        // lat na y, long na x
-        LineFunction FlyPath = new LineFunction(StartAirport.getLatitude(), StartAirport.getLongitude(), EndAirport.getLatitude(), EndAirport.getLongitude());
+        ArrayList<Airport> results = new ArrayList<Airport>();
+        ArrayList<Double> punkty = new ArrayList<Double>();
+        LineFunction FlyPath = new LineFunction(StartAirport.getCoords(), EndAirport.getCoords());
         for (Airport airport : FindAllAirportsInDb()) {
-            double DistanceToFlyPath = FlyPath.DistanceTo(airport.getLatitude(),airport.getLongitude());
-            double DistanceToStart = FlyPath.DistanceToStart(airport.getLatitude(),airport.getLongitude());
-            double DistanceToEnd = FlyPath.DistanceToEnd(airport.getLatitude(),airport.getLongitude());
-            if (DistanceToFlyPath <= MaxDistanceFromFlyPath)
-                //if (DistanceToStart<=MaxDistanceFromFlyPath || DistanceToEnd<=MaxDistanceFromFlyPath)
-                System.out.println(DistanceToFlyPath + " - " + airport);
+            if (FlyPath.PerpendicularThroughStart.IsAboveOrOn(airport.getCoords())) {
+                if (FlyPath.PerpendicularThroughEnd.IsBelowOrOn(airport.getCoords())) {
+                    if (FlyPath.DistanceTo(airport.getCoords()) <= MaxDistanceFromFlyPath) {
+
+                        Point cm = (CommonPoint(FlyPath, FlyPath.getPerpendicular(airport.getCoords())));
+                        double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm);
+                        punkty.add(length / FlyPath.getLength());
+
+                        results.add(airport);
+                    }
+                } else {
+                    if (FlyPath.PerpendicularThroughEnd.DistanceBetween(airport.getCoords(), FlyPath.Start) <= MaxDistanceFromFlyPath) {
+                        Point cm = (CommonPoint(FlyPath, FlyPath.getPerpendicular(airport.getCoords())));
+                        double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm);
+                        punkty.add(length / FlyPath.getLength());
+
+                        results.add(airport);
+                    }
+                }
+            } else {
+                if (FlyPath.PerpendicularThroughStart.DistanceBetween(airport.getCoords(), FlyPath.Start) <= MaxDistanceFromFlyPath) {
+                    Point cm = (CommonPoint(FlyPath, FlyPath.getPerpendicular(airport.getCoords())));
+                    double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm);
+                    punkty.add(length / FlyPath.getLength());
+
+                    results.add(airport);
+                }
+            }
         }
+        int i = 0;
+        for (Airport ar : results) {
+            double val=punkty.get(i++);
+            System.out.println(punkty.get(i++).toString() + ": " + ar.toString());
+        }
+    }
+
+    public static Point CommonPoint(LineFunction a, LineFunction b) {
+        double top = b.get_b() - a.get_b();
+        double bottom = a.get_a() - b.get_a();
+        double x = top / bottom;
+        double y = a.getValue(x);
+        return new Point(x, y);
     }
 }
