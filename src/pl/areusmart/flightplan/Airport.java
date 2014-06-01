@@ -10,6 +10,7 @@ public class Airport {
     String IATA;
     double Latitude;
     double Longitude;
+    char RegionCode;
 
     public String getName() {
         return Name;
@@ -43,6 +44,7 @@ public class Airport {
         this.IATA = IATA;
         Latitude = latitude;
         Longitude = longitude;
+
     }
 
     public Airport(String LineFrom_airportsdat) {
@@ -55,7 +57,12 @@ public class Airport {
         IATA = SplitInfo[4].substring(1, SplitInfo[4].length() - 1);
         Latitude = Double.parseDouble(SplitInfo[6]);
         Longitude = Double.parseDouble(SplitInfo[7]);
+        RegionCode=SplitInfo[10].charAt(1);
 
+    }
+
+    public char getRegionCode() {
+        return RegionCode;
     }
 
     @Override
