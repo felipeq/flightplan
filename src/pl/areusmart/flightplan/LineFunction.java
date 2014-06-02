@@ -6,9 +6,9 @@ public class LineFunction {
     double A;
     double C;
     double Length;
-    LineFunction PerpendicularThroughStart;
-    LineFunction PerpendicularThroughEnd;
-
+    LineFunction LowerPerpendicular;
+    LineFunction HigherPerpendicular;
+boolean StartLower =true;
     public Point getStart() {
         return Start;
     }
@@ -21,14 +21,6 @@ public class LineFunction {
         return Length;
     }
 
-    public LineFunction getPerpendicularThroughStart() {
-        return PerpendicularThroughStart;
-    }
-
-    public LineFunction getPerpendicularThroughEnd() {
-        return PerpendicularThroughEnd;
-    }
-
     public LineFunction(Point start, Point end) {
         Start = start;
         End = end;
@@ -37,9 +29,20 @@ public class LineFunction {
         double a2 = Start.getX() - End.getX();
         A = -(a1 / a2);
         C = -(Start.getY() - (-A * Start.getX()));
-        PerpendicularThroughStart = getPerpendicular(Start);
-        PerpendicularThroughEnd = getPerpendicular(End);
+        LowerPerpendicular = getPerpendicular(Start);
+        HigherPerpendicular = getPerpendicular(End);
+        // Sprawdź, czy nie są odwrotnie ustawione
+        if (LowerPerpendicular.getValue(0)> HigherPerpendicular.getValue(0))
+        {
+            StartLower =false;
+            LineFunction temp= LowerPerpendicular;
+            LowerPerpendicular = HigherPerpendicular;
+            HigherPerpendicular =temp;
+        }
+    }
 
+    public boolean isStartLower() {
+        return StartLower;
     }
 
     public LineFunction(double StartX, double StartY, double _A) {
@@ -48,16 +51,26 @@ public class LineFunction {
         C = -(Start.getY() + (A * Start.getX()));
     }
 
+    /**
+     * Shortest path from p to this LineFunction
+     * @param p
+     * @return
+     */
     public double DistanceTo(Point p) {
         double top = Math.abs(A * p.getX() + p.getY() + C);
         double bottom = Math.sqrt(A * A + 1);
         return top / bottom;
     }
 
-    public double DistanceBetween(Point start, Point end) {
+    // potrzebne do pointów
+    public static double DistanceBetween(Point start, Point end) {
         double left = Math.pow((start.getX() - end.getX()), 2);
         double right = Math.pow((start.getY() - end.getY()), 2);
         return Math.sqrt(left + right);
+    }
+    public double DistanceBetween(Point start)
+    {
+        return DistanceBetween(start,this.getStart());
     }
 
     public double getC() {
@@ -89,16 +102,18 @@ public class LineFunction {
     }
 
     public boolean IsAboveOrOn(Point p) {
-        if (getValue(p.getX()) <= p.getY())
-            return true;
-        else
-            return false;
+        return getValue(p.getX()) <= p.getY();
     }
 
     public boolean IsBelowOrOn(Point p) {
-        if (getValue(p.getX()) >= p.getY())
-            return true;
+        return getValue(p.getX()) >= p.getY();
+    }
+    public int NumberOfSectorFor(Airport ap){
+        if (LowerPerpendicular.IsBelowOrOn(ap.getCoords()))
+            return 1;
+        if (HigherPerpendicular.IsAboveOrOn(ap.getCoords()))
+            return 3;
         else
-            return false;
+            return 2;
     }
 }

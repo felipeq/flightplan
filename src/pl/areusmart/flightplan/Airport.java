@@ -13,7 +13,7 @@ public class Airport {
     double Latitude;
     double Longitude;
     char RegionCode;
-    Point coords;
+    private Point coords;
 
     public String getName() {
         return Name;
@@ -50,10 +50,10 @@ public class Airport {
 //        Longitude = Double.parseDouble(SplitInfo[7]);
 //        RegionCode=SplitInfo[10].charAt(1);
         try {
-        Name = SplitInfo[1];
-        City = SplitInfo[3];
-        Country = SplitInfo[5];
-        IATA = SplitInfo[7];
+            Name = SplitInfo[1];
+            City = SplitInfo[3];
+            Country = SplitInfo[5];
+            IATA = SplitInfo[7];
             Latitude = Double.parseDouble((SplitInfo[10].split(","))[1]);
             Longitude = Double.parseDouble((SplitInfo[10].split(","))[2]);
         } catch (Exception ex) {
@@ -77,7 +77,7 @@ public class Airport {
     public String toString() {
         //KRK Krakow Poland 50.0777 19.7848
         DecimalFormat df = new DecimalFormat("#0.0000");
-        return IATA+" "+City+" "+Country+" "+df.format(Latitude)+" "+df.format(Longitude);
+        return IATA + " " + City + " " + Country + " " + df.format(Latitude) + " " + df.format(Longitude);
     }
 
     @Override

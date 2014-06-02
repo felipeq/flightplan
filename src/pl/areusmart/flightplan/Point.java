@@ -28,4 +28,16 @@ public class Point {
         X = x;
         Y = y;
     }
+
+    public int IsCloserToZeroThan(Point p) {
+        Point Zero = new Point(0, 0);
+        double dist=LineFunction.DistanceBetween(p, Zero);
+        double distZero=LineFunction.DistanceBetween(this, Zero);
+        if (dist< distZero)
+            return 1;
+        if (dist==distZero)
+            return 0;
+        else
+            return -1;
+    }
 }
