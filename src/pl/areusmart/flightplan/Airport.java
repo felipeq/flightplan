@@ -76,8 +76,43 @@ public class Airport {
     @Override
     public String toString() {
         //KRK Krakow Poland 50.0777 19.7848
-        DecimalFormat df = new DecimalFormat("#.0000");
+        DecimalFormat df = new DecimalFormat("#0.0000");
         return IATA+" "+City+" "+Country+" "+df.format(Latitude)+" "+df.format(Longitude);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Airport airport = (Airport) o;
+
+        if (Double.compare(airport.Latitude, Latitude) != 0) return false;
+        if (Double.compare(airport.Longitude, Longitude) != 0) return false;
+        if (RegionCode != airport.RegionCode) return false;
+        if (City != null ? !City.equals(airport.City) : airport.City != null) return false;
+        if (Country != null ? !Country.equals(airport.Country) : airport.Country != null) return false;
+        if (IATA != null ? !IATA.equals(airport.IATA) : airport.IATA != null) return false;
+        if (Name != null ? !Name.equals(airport.Name) : airport.Name != null) return false;
+        if (coords != null ? !coords.equals(airport.coords) : airport.coords != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = Name != null ? Name.hashCode() : 0;
+        result = 31 * result + (City != null ? City.hashCode() : 0);
+        result = 31 * result + (Country != null ? Country.hashCode() : 0);
+        result = 31 * result + (IATA != null ? IATA.hashCode() : 0);
+        temp = Double.doubleToLongBits(Latitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(Longitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + (int) RegionCode;
+        result = 31 * result + (coords != null ? coords.hashCode() : 0);
+        return result;
+    }
 }

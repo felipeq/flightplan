@@ -3,15 +3,53 @@ package pl.areusmart.flightplan;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
+
+class ListItem implements Comparable<ListItem> {
+    private Airport airport;
+    private Double value;
+
+    public ListItem(Airport _airport, Double _value) {
+        airport = _airport;
+        value = _value;
+    }
+
+    public Airport getAirport() {
+        return airport;
+    }
+
+    public Double getValue() {
+        return value;
+    }
+
+    @Override
+    public int compareTo(ListItem o) {
+        if (o.getValue().equals(0.0) && !o.getAirport().equals(Main.StartAirport))
+            return -1;
+        if (o.getValue().equals(1.0) && !o.getAirport().equals(Main.EndAirport))
+            return 1;
+        if (value < o.getValue())
+            return -1;
+        if (value > o.getValue())
+            return 1;
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        DecimalFormat df = new DecimalFormat("#0.0000");
+        return airport.getIATA() + " " + airport.getCity() + " " + airport.getCountry() + " " + df.format(airport.getLatitude()) + " " + df.format(airport.getLongitude()) + " " + getValue();
+    }
+}
 
 public class Main {
     public static final int DegreeInKm = 111;
-
-    final static String PathToData = "lotniska.dat";
+    public static Airport StartAirport;
+    public static Airport EndAirport;
+    final static String PathToData = "test.dat";
 
     public static ArrayList<Airport> FindAllAirportsInDb() {
         BufferedReader br = null;
@@ -69,50 +107,62 @@ public class Main {
     }
 
     public static void main(String[] args) throws ParseException {
-        Airport StartAirport = FindAirportInDb(args[0]);
-        Airport EndAirport = FindAirportInDb(args[1]);
-        double MaxDistanceFromFlyPath = Double.parseDouble(args[2]) / DegreeInKm;
-        double Velocity = Double.parseDouble(args[3]);
+        StartAirport = FindAirportInDb(args[0]);
+        EndAirport = FindAirportInDb(args[1]);
+        double MaxDistanceFromFlyPath = Double.parseDouble(args[2]);
+        double Velocity = Double.parseDouble(args[3]) / DegreeInKm;
 
-        Date date = new SimpleDateFormat("HH:mm:ss").parse(args[4]);
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        cal.setTime(sdf.parse(args[4]));
+
+        Map<Double, Airport> wyniki = new TreeMap<Double, Airport>();
+        ArrayList<ListItem> lista = new ArrayList<ListItem>();
 
         ArrayList<Airport> results = new ArrayList<Airport>();
         ArrayList<Double> punkty = new ArrayList<Double>();
         LineFunction FlyPath = new LineFunction(StartAirport.getCoords(), EndAirport.getCoords());
+        double TotalAirtime = FlyPath.getLength() / Velocity;
         for (Airport airport : FindAllAirportsInDb()) {
             if (FlyPath.PerpendicularThroughStart.IsAboveOrOn(airport.getCoords())) {
                 if (FlyPath.PerpendicularThroughEnd.IsBelowOrOn(airport.getCoords())) {
                     if (FlyPath.DistanceTo(airport.getCoords()) <= MaxDistanceFromFlyPath) {
 
                         Point cm = (CommonPoint(FlyPath, FlyPath.getPerpendicular(airport.getCoords())));
-                        double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm);
-                        punkty.add(length / FlyPath.getLength());
-
+                        double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm) / FlyPath.getLength();
+                        punkty.add(length);
+                        wyniki.put(length, airport);
+                        lista.add(new ListItem(airport, length));
                         results.add(airport);
                     }
                 } else {
-                    if (FlyPath.PerpendicularThroughEnd.DistanceBetween(airport.getCoords(), FlyPath.Start) <= MaxDistanceFromFlyPath) {
-                        Point cm = (CommonPoint(FlyPath, FlyPath.getPerpendicular(airport.getCoords())));
-                        double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm);
-                        punkty.add(length / FlyPath.getLength());
-
+                    if (FlyPath.PerpendicularThroughEnd.DistanceBetween(airport.getCoords(), FlyPath.getEnd()) <= MaxDistanceFromFlyPath) {
+                        // Jest nad Endem, więc najbliżej będzie jak doleci
+                        double length = 1.0;
+                        punkty.add(length);
+                        wyniki.put(length, airport);
+                        lista.add(new ListItem(airport, length));
                         results.add(airport);
                     }
                 }
             } else {
                 if (FlyPath.PerpendicularThroughStart.DistanceBetween(airport.getCoords(), FlyPath.Start) <= MaxDistanceFromFlyPath) {
                     Point cm = (CommonPoint(FlyPath, FlyPath.getPerpendicular(airport.getCoords())));
-                    double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm);
-                    punkty.add(length / FlyPath.getLength());
-
+                    double length = FlyPath.DistanceBetween(FlyPath.getStart(), cm) / FlyPath.getLength();
+                    punkty.add(length);
+                    wyniki.put(length, airport);
+                    lista.add(new ListItem(airport, length));
                     results.add(airport);
                 }
             }
         }
-        int i = 0;
-        for (Airport ar : results) {
-            double val=punkty.get(i++);
-            System.out.println(punkty.get(i++).toString() + ": " + ar.toString());
+        Collections.sort(lista);
+        for (ListItem li : lista) {
+            //int Czas = (int) (TotalAirtime * li.getValue() * 3600);
+            //Calendar temp = Calendar.getInstance();
+            //temp.add(Calendar.SECOND, Czas);
+            //System.out.println(li.toString() + " " + sdf.format(temp.getTime()));
+            System.out.println(li.toString());
         }
     }
 

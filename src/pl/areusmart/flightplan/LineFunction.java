@@ -32,13 +32,14 @@ public class LineFunction {
     public LineFunction(Point start, Point end) {
         Start = start;
         End = end;
-        Length=DistanceBetween(Start,End);
+        Length = DistanceBetween(Start, End);
         double a1 = Start.getY() - End.getY();
         double a2 = Start.getX() - End.getX();
         A = -(a1 / a2);
         C = -(Start.getY() - (-A * Start.getX()));
         PerpendicularThroughStart = getPerpendicular(Start);
         PerpendicularThroughEnd = getPerpendicular(End);
+
     }
 
     public LineFunction(double StartX, double StartY, double _A) {
@@ -49,14 +50,16 @@ public class LineFunction {
 
     public double DistanceTo(Point p) {
         double top = Math.abs(A * p.getX() + p.getY() + C);
-        double bottom = Math.sqrt(A * A + C * C);
+        double bottom = Math.sqrt(A * A + 1);
         return top / bottom;
     }
-    public double DistanceBetween(Point start,Point end){
+
+    public double DistanceBetween(Point start, Point end) {
         double left = Math.pow((start.getX() - end.getX()), 2);
         double right = Math.pow((start.getY() - end.getY()), 2);
         return Math.sqrt(left + right);
     }
+
     public double getC() {
         return C;
     }
@@ -64,6 +67,7 @@ public class LineFunction {
     public double getA() {
         return A;
     }
+
     public double get_b() {
         return -C;
     }
@@ -71,14 +75,15 @@ public class LineFunction {
     public double get_a() {
         return -A;
     }
-     public LineFunction getPerpendicular(Point p) {
+
+    public LineFunction getPerpendicular(Point p) {
         return new LineFunction(p.getX(), p.getY(), -(1.0 / A));
     }
 
-    public double getArg(double y)
-    {
-        return (y-get_b())/get_a();
+    public double getArg(double y) {
+        return (y - get_b()) / get_a();
     }
+
     public double getValue(double x) {
         return (-A) * x - C;
     }
