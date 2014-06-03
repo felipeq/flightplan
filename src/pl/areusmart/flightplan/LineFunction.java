@@ -1,14 +1,19 @@
 package pl.areusmart.flightplan;
 
 public class LineFunction {
-    Point Start;
-    Point End;
-    double A;
-    double C;
-    double Length;
-    LineFunction LowerPerpendicular;
-    LineFunction HigherPerpendicular;
-boolean StartLower =true;
+    private Point Start;
+    private Point End;
+    private double A;
+    private double C;
+    private double Length;
+    private LineFunction LowerPerpendicular;
+    private LineFunction HigherPerpendicular;
+    /**
+     * Zamiana miejscami startu z końcem ( tzn. z KRK MMX na MMX KRK ) powoduje, że proste
+     * prostopadłe powinny zamienić się miejscami, żeby warunek isAbove i isBelow miał sens.
+     * Ta flaga informuje o zmianie.
+     */
+    private boolean StartLower = true;
     public Point getStart() {
         return Start;
     }
@@ -29,9 +34,9 @@ boolean StartLower =true;
         double a2 = Start.getX() - End.getX();
         A = -(a1 / a2);
         C = -(Start.getY() - (-A * Start.getX()));
+
         LowerPerpendicular = getPerpendicular(Start);
         HigherPerpendicular = getPerpendicular(End);
-        // Sprawdź, czy nie są odwrotnie ustawione
         if (LowerPerpendicular.getValue(0)> HigherPerpendicular.getValue(0))
         {
             StartLower =false;
@@ -52,9 +57,9 @@ boolean StartLower =true;
     }
 
     /**
-     * Shortest path from p to this LineFunction
-     * @param p
-     * @return
+     * Distance between calling line function and p
+     * @param p point
+     * @return Distance between point and line function
      */
     public double DistanceTo(Point p) {
         double top = Math.abs(A * p.getX() + p.getY() + C);
@@ -62,23 +67,22 @@ boolean StartLower =true;
         return top / bottom;
     }
 
-    // potrzebne do pointów
+    /**
+     * Distance between 2 points
+     *
+     * @param start first point
+     * @param end   second point
+     * @return distance between them
+     */
     public static double DistanceBetween(Point start, Point end) {
         double left = Math.pow((start.getX() - end.getX()), 2);
         double right = Math.pow((start.getY() - end.getY()), 2);
         return Math.sqrt(left + right);
     }
+
     public double DistanceBetween(Point start)
     {
         return DistanceBetween(start,this.getStart());
-    }
-
-    public double getC() {
-        return C;
-    }
-
-    public double getA() {
-        return A;
     }
 
     public double get_b() {
@@ -89,25 +93,42 @@ boolean StartLower =true;
         return -A;
     }
 
+    /**
+     * Gets perpendicular function to calling function and given point
+     * @param p point on function
+     * @return perpendicular function to calling function and given point
+     */
     public LineFunction getPerpendicular(Point p) {
         return new LineFunction(p.getX(), p.getY(), -(1.0 / A));
-    }
-
-    public double getArg(double y) {
-        return (y - get_b()) / get_a();
     }
 
     public double getValue(double x) {
         return (-A) * x - C;
     }
 
+    /**
+     * Check if given point is above function
+     * @param p point
+     * @return if given point is above function
+     */
     public boolean IsAboveOrOn(Point p) {
         return getValue(p.getX()) <= p.getY();
     }
 
+    /**
+     * Check if given point is below function
+     * @param p point
+     * @return if given point is below function
+     */
     public boolean IsBelowOrOn(Point p) {
         return getValue(p.getX()) >= p.getY();
     }
+
+    /**
+     * Determine in which sector given airport is
+     * @param ap airport to check
+     * @return number of sector
+     */
     public int NumberOfSectorFor(Airport ap){
         if (LowerPerpendicular.IsBelowOrOn(ap.getCoords()))
             return 1;
